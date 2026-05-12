@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>The Weather</title>
+</head>
+
+<body>
+<input id="city" placeholder="City">
+<button onclick="getWeather()">Weather?</button>
+
+<p id="output"></p>
+
+<script> /* JavaScript part*/
+function getWeather(){
+    const city = document.getElementById("city").value;
+
+    fetch("/api/weather?city=" + city)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            var output = document.getElementById("output"); //this puts the response where the output went earlier in the paragraph
+        if (data.error) {
+            output.textContent = "Error: " + data.error;
+        } else {
+            output.textContent = data.city + ": " + data.temp + " degrees Fahrenheit. The weather is " + data.weather;
+        }
+    })
+    .catch(function() {document.getElementById("output").textContent = "Error";} );
+}
+</script>
+
+</body>
+</html> 
