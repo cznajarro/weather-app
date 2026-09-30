@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv() #loading the .env file to get the API key
 
 app = Flask(__name__)
-api_key = os.environ.get("api_key")
+api_key = os.environ.get("OPENWEATHER_API_KEY")
 
 @app.route("/")
 def index():
