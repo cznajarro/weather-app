@@ -1,50 +1,29 @@
 # Weather App
 
-A Flask weather application that retrieves current conditions from the OpenWeatherMap API and stores recent city searches in SQLite.
+A small weather lookup app built with Python, Flask, and vanilla JavaScript. Enter a city to see its current temperature in Fahrenheit and a short description of the weather, powered by OpenWeatherMap.
 
-## Overview
-
-This project combines a Python Flask backend with a vanilla JavaScript frontend. Users search for a city through the browser, the backend requests weather data from OpenWeatherMap, and the application returns the result to the page without requiring a full page reload.
-
-Searches are stored locally in SQLite so the application can display recent search history through the `/api/history` route.
+The frontend requests data from a Flask endpoint and updates the page without a full reload. The API key stays on the backend and is loaded from an environment variable.
 
 ## Features
 
-- Search for current weather by city
-- OpenWeatherMap API integration
-- Flask backend with JSON responses
-- Vanilla JavaScript frontend using `fetch`
-- SQLite search-history database
-- Recent-search history endpoint
-- API-key configuration through environment variables
-- Local development setup with no hosted database required
+- Look up current weather by city name.
+- Display temperature rounded to the nearest whole degree Fahrenheit.
+- Show a weather condition such as Clear, Clouds, or Rain.
+- Update results in the browser using JavaScript `fetch`.
+- Configure the API key through a local `.env` file.
 
-## Technologies
+## Tech Stack
 
-- Python
-- Flask
-- SQLite
-- JavaScript
-- HTML and CSS
-- OpenWeatherMap API
+| Component | Technology |
+| --- | --- |
+| Backend and routes | Python, Flask |
+| Weather API requests | Requests, OpenWeatherMap |
+| Configuration | python-dotenv, environment variables |
+| Frontend | HTML, vanilla JavaScript |
 
-## Project Structure
+## Run Locally
 
-```text
-weather-app/
-├── assets/              # Frontend assets, if included
-├── data/                # Local SQLite database location, if included
-├── .env                 # Local API key, not committed
-├── .gitignore
-├── Weather.py           # Flask application
-├── index.html           # Frontend interface
-├── requirements.txt
-└── README.md
-```
-
-The exact local database filename may be created automatically when the application runs. Database files and secret configuration should remain excluded through `.gitignore`.
-
-## Setup
+You need Python 3, Git, an internet connection, and an [OpenWeatherMap API key](https://openweathermap.org/api).
 
 ### 1. Clone the repository
 
@@ -53,103 +32,106 @@ git clone https://github.com/cznajarro/weather-app.git
 cd weather-app
 ```
 
-### 2. Create a virtual environment
+Run the remaining commands from this project folder.
 
-macOS and Linux:
+### 2. Create and activate a virtual environment
+
+**macOS / Linux:**
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Windows:
+**Windows (Command Prompt):**
 
-```bash
+```bat
 python -m venv .venv
-.venv\\Scripts\\activate
+.venv\Scripts\activate.bat
 ```
 
 ### 3. Install dependencies
 
+With the virtual environment activated:
+
 ```bash
-python3 -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-If your system uses `python` instead of `python3`, use the matching command for both Python and pip.
+### 4. Add your API key
 
-### 4. Create the environment file
+Create a file named `.env` alongside `Weather.py`, using the included `env.example` as a template:
 
-Create a file named `.env` in the project root:
-
-```env
+```dotenv
 OPENWEATHER_API_KEY=your_api_key_here
 ```
 
-Create an API key through [OpenWeatherMap](https://openweathermap.org/api). Do not commit the `.env` file or expose the key in frontend code.
+Replace the placeholder with your own key. The repository's `.gitignore` excludes `.env`; keep the real key out of committed files.
 
-### 5. Start the Flask server
+### 5. Start the app
 
 ```bash
-python3 Weather.py
+python Weather.py
 ```
 
-Open the local address shown by Flask in your browser. The frontend should be accessed through Flask rather than opened directly with a `file://` URL.
+Open **[http://localhost:5001](http://localhost:5001)**, enter a city, and click **Weather?**
 
-## API Route
+Access the page through Flask rather than opening `index.html` directly. Press **Ctrl+C** in the terminal to stop the server. To run it again later, activate the same virtual environment and run `python Weather.py`; dependencies do not need to be reinstalled each time.
 
-### `GET /api/history`
+## How It Works
 
-Returns recent searches saved in the local SQLite database.
+1. Flask serves `index.html` at `/`.
+2. Clicking the button sends a request to `/api/weather?city=<city>`.
+3. The backend calls OpenWeatherMap's current-weather endpoint with imperial units and the server-side API key.
+4. Flask returns the city, rounded temperature, and weather condition as JSON.
+5. JavaScript displays the result on the page.
 
-Example request:
+### Routes
 
-```text
-http://127.0.0.1:5001/api/history
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Serve the weather lookup page. |
+| `GET /api/weather?city=Seattle` | Request current weather for a city. |
+
+Illustrative successful response; values depend on current conditions:
+
+```json
+{
+  "city": "Seattle",
+  "temp": 55,
+  "weather": "Clouds"
+}
 ```
 
-The frontend calls this route to update the displayed search history.
+## Project Files
 
-## Data Flow
+| File | Purpose |
+| --- | --- |
+| `Weather.py` | Flask application and OpenWeatherMap request logic. |
+| `index.html` | Search form and JavaScript for fetching and displaying results. |
+| `requirements.txt` | Python dependencies. |
+| `env.example` | API-key configuration template. |
+| `.gitignore` | Excludes local secrets, virtual environments, and Python cache files. |
+| `LICENSE` | MIT license. |
 
-1. The user submits a city search in the browser.
-2. JavaScript sends the request to the Flask backend.
-3. Flask requests weather data from OpenWeatherMap.
-4. The search is written to SQLite.
-5. The backend returns weather data to the frontend.
-6. The page updates the weather display and search history.
+## Current Limitations
 
-## Database
+- Searches are not saved; there is no database or search-history endpoint.
+- Error handling is basic. The backend recognizes OpenWeatherMap's string `"404"` response code and returns a city-not-found message, but currently sends it with HTTP status 200.
+- Blank input, invalid API keys, network failures, and unexpected API responses are not fully handled. External requests do not yet have a timeout.
+- The app uses Flask's built-in development server and needs deployment configuration before public production use.
 
-The application uses SQLite for local persistence. Each search can be recorded with information such as the searched city and the associated weather response or timestamp, depending on the current database schema.
+## Planned Improvements
 
-SQLite was selected because this project is intended to run locally without requiring a hosted database service.
+- Validate city input and encode query parameters correctly.
+- Add request timeouts and consistent error responses with appropriate HTTP status codes.
+- Add loading feedback, Enter-key submission, and accessible form labels.
+- Add automated tests for successful lookups and API failures.
 
-## What I Practiced
+## Skills Practiced
 
-- Building a Flask route that accepts browser requests
-- Calling an external API from a Python backend
-- Returning JSON data to a JavaScript frontend
-- Persisting application data with SQLite
-- Keeping API credentials in environment variables
-- Connecting frontend behavior to backend routes
+Flask routing, calling a third-party API, reading environment variables, returning JSON, and connecting a JavaScript frontend to a Python backend.
 
-## Limitations
+## License
 
-- The application requires an OpenWeatherMap API key.
-- The database is local to the machine running the application.
-- Weather data depends on the availability and response format of the external API.
-- This project is configured for local use and is not currently deployed as a hosted service.
-
-## Future Improvements
-
-- Add automated tests for API responses and database writes
-- Add clearer user-facing error messages for invalid locations and API failures
-- Add pagination or a configurable limit for search history
-- Add weather forecasts alongside current conditions
-
-## Author
-
-Carlos Zuniga
-
-- GitHub: [cznajarro](https://github.com/cznajarro)
-- LinkedIn: [Carlos Zuniga](https://www.linkedin.com/in/cznajarro)
+This project is licensed under the [MIT License](LICENSE).
